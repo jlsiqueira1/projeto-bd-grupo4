@@ -1,0 +1,34 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: prf-backend
+
+  datasource:
+    # No docker compose estes valores vêm das variáveis de ambiente do serviço "api".
+    # Rodando fora do Docker, o padrão aponta para o banco exposto na porta 5433.
+    url: ${DB_URL:jdbc:postgresql://localhost:5433/prf}
+    username: ${DB_USER:prf}
+    password: ${DB_PASSWORD:prf}
+
+  jpa:
+    # O esquema é criado pelos scripts SQL em /db (fonte da verdade, com CHECKs e
+    # gatilhos que o Hibernate não gera). O Hibernate NÃO cria nem altera tabelas.
+    hibernate:
+      ddl-auto: none
+    open-in-view: false
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: method
+    tags-sorter: alpha

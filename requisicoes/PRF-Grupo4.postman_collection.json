@@ -1,0 +1,2085 @@
+{
+  "info": {
+    "_postman_id": "e5c690e9-4eef-5407-8091-49fbcc4e6c60",
+    "name": "Sistema de Avaliação PRF — Grupo 4",
+    "description": "Exemplos de requisição do backend (Etapa 3). Rode as pastas em ordem num banco recém-criado: os ids citados batem com o 02-seed.sql.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080"
+    }
+  ],
+  "item": [
+    {
+      "name": "01 Pessoas (superclasse)",
+      "item": [
+        {
+          "name": "Listar todas as pessoas",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/pessoas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "pessoas"
+              ]
+            },
+            "description": "Mostra o tipo de cada pessoa (PACIENTE, PROFISSIONAL, ESTAGIARIO)."
+          }
+        },
+        {
+          "name": "Buscar pessoa por CPF",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/pessoas/11111111111",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "pessoas",
+                "11111111111"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "02 Pacientes",
+      "item": [
+        {
+          "name": "Listar pacientes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/pacientes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "pacientes"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Buscar paciente",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/pacientes/11111111111",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "pacientes",
+                "11111111111"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Criar paciente",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/pacientes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "pacientes"
+              ]
+            },
+            "description": "Insere em pessoa e paciente na mesma transação (herança JOINED). 201 Created.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cpf\": \"77777777777\",\n  \"nomeCompleto\": \"Antônio Pereira Santos\",\n  \"dataNascimento\": \"1960-04-12\",\n  \"genero\": \"MASCULINO\",\n  \"telefone\": \"81999990007\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Atualizar paciente",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/pacientes/77777777777",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "pacientes",
+                "77777777777"
+              ]
+            },
+            "description": "O CPF não muda pelo PUT (use PATCH /api/pessoas/{cpf}/cpf).",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nomeCompleto\": \"Antônio Pereira dos Santos\",\n  \"dataNascimento\": \"1960-04-12\",\n  \"genero\": \"MASCULINO\",\n  \"telefone\": \"81999990077\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "ERRO 409 - CPF já cadastrado",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/pacientes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "pacientes"
+              ]
+            },
+            "description": "33333333333 já é PROFISSIONAL: especialização disjunta.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cpf\": \"33333333333\",\n  \"nomeCompleto\": \"Teste\",\n  \"dataNascimento\": \"1990-01-01\",\n  \"genero\": \"OUTRO\",\n  \"telefone\": \"81900000000\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "ERRO 400 - CPF com formato inválido",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/pacientes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "pacientes"
+              ]
+            },
+            "description": "CPF só com 11 dígitos (mesma regra do CHECK ck_pessoa_cpf).",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cpf\": \"123.456.789-00\",\n  \"nomeCompleto\": \"Teste\",\n  \"dataNascimento\": \"1990-01-01\",\n  \"genero\": \"OUTRO\",\n  \"telefone\": \"81900000000\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "03 Contatos de emergência (entidade fraca)",
+      "item": [
+        {
+          "name": "Listar contatos do paciente",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/pacientes/11111111111/contatos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "pacientes",
+                "11111111111",
+                "contatos"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Criar contato",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/pacientes/77777777777/contatos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "pacientes",
+                "77777777777",
+                "contatos"
+              ]
+            },
+            "description": "Chave = (cpf do paciente, nome).",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Rita Pereira\",\n  \"telefone\": \"81988880010\",\n  \"relacao\": \"Esposa\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Buscar contato",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/pacientes/77777777777/contatos/Rita%20Pereira",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "pacientes",
+                "77777777777",
+                "contatos",
+                "Rita%20Pereira"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Atualizar contato",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/pacientes/77777777777/contatos/Rita%20Pereira",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "pacientes",
+                "77777777777",
+                "contatos",
+                "Rita%20Pereira"
+              ]
+            },
+            "description": "Só telefone e relação mudam; o nome é a chave parcial.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"telefone\": \"81988880099\",\n  \"relacao\": \"Esposa\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "ERRO 409 - contato com nome repetido",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/pacientes/11111111111/contatos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "pacientes",
+                "11111111111",
+                "contatos"
+              ]
+            },
+            "description": "Viola a PK composta (cpf_paciente, nome).",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Paulo Silva\",\n  \"telefone\": \"81900000000\",\n  \"relacao\": \"Filho\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Excluir contato",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/pacientes/77777777777/contatos/Rita%20Pereira",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "pacientes",
+                "77777777777",
+                "contatos",
+                "Rita%20Pereira"
+              ]
+            },
+            "description": "204 No Content."
+          }
+        }
+      ]
+    },
+    {
+      "name": "04 Profissionais de saúde",
+      "item": [
+        {
+          "name": "Listar profissionais",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/profissionais",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "profissionais"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Criar profissional",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/profissionais",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "profissionais"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cpf\": \"88888888888\",\n  \"nomeCompleto\": \"Juliana Moura Cavalcanti\",\n  \"dataNascimento\": \"1988-02-03\",\n  \"genero\": \"FEMININO\",\n  \"telefone\": \"81999990008\",\n  \"conselho\": \"CRF-PE\",\n  \"numeroRegistro\": \"54321\",\n  \"especialidade\": \"Farmácia Hospitalar\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Atualizar profissional",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/profissionais/88888888888",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "profissionais",
+                "88888888888"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nomeCompleto\": \"Juliana Moura Cavalcanti\",\n  \"dataNascimento\": \"1988-02-03\",\n  \"genero\": \"FEMININO\",\n  \"telefone\": \"81999990088\",\n  \"conselho\": \"CRF-PE\",\n  \"numeroRegistro\": \"54321\",\n  \"especialidade\": \"Farmácia Clínica\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "ERRO 409 - registro repetido no mesmo conselho",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/profissionais",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "profissionais"
+              ]
+            },
+            "description": "UNIQUE (conselho, numero_registro). O mesmo número no CRM-PE é permitido.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cpf\": \"10101010101\",\n  \"nomeCompleto\": \"Teste\",\n  \"dataNascimento\": \"1990-01-01\",\n  \"genero\": \"OUTRO\",\n  \"telefone\": \"81900000000\",\n  \"conselho\": \"CRF-PE\",\n  \"numeroRegistro\": \"12345\",\n  \"especialidade\": \"X\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "05 Estagiários",
+      "item": [
+        {
+          "name": "Listar estagiários",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/estagiarios",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "estagiarios"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Criar estagiário",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/estagiarios",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "estagiarios"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cpf\": \"99999999999\",\n  \"nomeCompleto\": \"Pedro Henrique Barros\",\n  \"dataNascimento\": \"2004-08-25\",\n  \"genero\": \"MASCULINO\",\n  \"telefone\": \"81999990009\",\n  \"instituicaoEnsino\": \"UFPE\",\n  \"curso\": \"Farmácia\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Atualizar estagiário",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/estagiarios/99999999999",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "estagiarios",
+                "99999999999"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nomeCompleto\": \"Pedro Henrique Barros\",\n  \"dataNascimento\": \"2004-08-25\",\n  \"genero\": \"MASCULINO\",\n  \"telefone\": \"81999990099\",\n  \"instituicaoEnsino\": \"UFPE\",\n  \"curso\": \"Farmácia\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "06 Catálogo NESC",
+      "item": [
+        {
+          "name": "Listar catálogo",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/opcoes-nesc",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "opcoes-nesc"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Filtrar por categoria",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/opcoes-nesc?categoria=SEGURANCA",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "opcoes-nesc"
+              ],
+              "query": [
+                {
+                  "key": "categoria",
+                  "value": "SEGURANCA"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Criar opção (id 6)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/opcoes-nesc",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "opcoes-nesc"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"categoria\": \"EFETIVIDADE\",\n  \"subtipo\": \"QUALITATIVO\",\n  \"texto\": \"Medicamento inadequado para a condição\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Atualizar opção 6",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/opcoes-nesc/6",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "opcoes-nesc",
+                "6"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"categoria\": \"EFETIVIDADE\",\n  \"subtipo\": \"QUALITATIVO\",\n  \"texto\": \"Medicamento não efetivo para a condição\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "ERRO 409 - opção duplicada",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/opcoes-nesc",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "opcoes-nesc"
+              ]
+            },
+            "description": "UNIQUE (categoria, subtipo, texto).",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"categoria\": \"SEGURANCA\",\n  \"subtipo\": \"QUANTITATIVO\",\n  \"texto\": \"Dose acima da recomendada\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "ERRO 400 - categoria fora da lista",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/opcoes-nesc",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "opcoes-nesc"
+              ]
+            },
+            "description": "Categorias aceitas: NECESSIDADE, EFETIVIDADE, SEGURANCA, CUMPRIMENTO.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"categoria\": \"CUSTO\",\n  \"subtipo\": \"OUTRO\",\n  \"texto\": \"x\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Excluir opção 6",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/opcoes-nesc/6",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "opcoes-nesc",
+                "6"
+              ]
+            }
+          }
+        },
+        {
+          "name": "ERRO 409 - excluir opção já usada",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/opcoes-nesc/5",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "opcoes-nesc",
+                "5"
+              ]
+            },
+            "description": "ON DELETE RESTRICT: a opção 5 classifica a suspeita 1."
+          }
+        }
+      ]
+    },
+    {
+      "name": "07 Medicamentos",
+      "item": [
+        {
+          "name": "Listar medicamentos",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/medicamentos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "medicamentos"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Medicamentos de um paciente",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/medicamentos?cpfPaciente=11111111111",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "medicamentos"
+              ],
+              "query": [
+                {
+                  "key": "cpfPaciente",
+                  "value": "11111111111"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Criar medicamento (id 5)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/medicamentos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "medicamentos"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cpfPaciente\": \"77777777777\",\n  \"nome\": \"Levotiroxina\",\n  \"dose\": \"50 mcg\",\n  \"forma\": \"Comprimido\",\n  \"via\": \"Oral\",\n  \"frequencia\": \"1x ao dia, em jejum\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Atualizar medicamento 5",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/medicamentos/5",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "medicamentos",
+                "5"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cpfPaciente\": \"77777777777\",\n  \"nome\": \"Levotiroxina\",\n  \"dose\": \"75 mcg\",\n  \"forma\": \"Comprimido\",\n  \"via\": \"Oral\",\n  \"frequencia\": \"1x ao dia, em jejum\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "ERRO 422 - trocar dono de medicamento com suspeita",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/medicamentos/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "medicamentos",
+                "1"
+              ]
+            },
+            "description": "O medicamento 1 já é alvo da suspeita 3 (da paciente 11111111111).",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cpfPaciente\": \"22222222222\",\n  \"nome\": \"Losartana\",\n  \"dose\": \"50 mg\",\n  \"forma\": \"Comprimido\",\n  \"via\": \"Oral\",\n  \"frequencia\": \"1x ao dia\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "08 Avaliações PRF",
+      "item": [
+        {
+          "name": "Listar avaliações",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/avaliacoes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "avaliacoes"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Histórico de um paciente",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/avaliacoes?cpfPaciente=11111111111",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "avaliacoes"
+              ],
+              "query": [
+                {
+                  "key": "cpfPaciente",
+                  "value": "11111111111"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Criar avaliação por profissional (id 4)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/avaliacoes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "avaliacoes"
+              ]
+            },
+            "description": "Conduzida por profissional: sem estagiário e sem supervisor.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"dataRealizacao\": \"2026-10-28\",\n  \"dataRetorno\": \"2026-11-28\",\n  \"cpfPaciente\": \"77777777777\",\n  \"cpfProfissional\": \"33333333333\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Criar avaliação por estagiário (id 5)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/avaliacoes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "avaliacoes"
+              ]
+            },
+            "description": "Estagiário exige supervisor.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"dataRealizacao\": \"2026-10-29\",\n  \"cpfPaciente\": \"77777777777\",\n  \"cpfEstagiario\": \"99999999999\",\n  \"cpfSupervisor\": \"88888888888\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Atualizar avaliação 4",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/avaliacoes/4",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "avaliacoes",
+                "4"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"dataRealizacao\": \"2026-10-28\",\n  \"dataRetorno\": \"2026-12-01\",\n  \"cpfPaciente\": \"77777777777\",\n  \"cpfProfissional\": \"33333333333\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "ERRO 422 - estagiário sem supervisor",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/avaliacoes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "avaliacoes"
+              ]
+            },
+            "description": "CHECK ck_avaliacao_supervisor.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"dataRealizacao\": \"2026-10-28\",\n  \"cpfPaciente\": \"77777777777\",\n  \"cpfEstagiario\": \"99999999999\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "ERRO 422 - profissional com supervisor",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/avaliacoes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "avaliacoes"
+              ]
+            },
+            "description": "Avaliação de profissional não tem supervisão adicional.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"dataRealizacao\": \"2026-10-28\",\n  \"cpfPaciente\": \"77777777777\",\n  \"cpfProfissional\": \"33333333333\",\n  \"cpfSupervisor\": \"44444444444\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "ERRO 422 - profissional e estagiário juntos",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/avaliacoes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "avaliacoes"
+              ]
+            },
+            "description": "CHECK ck_avaliacao_executor: exatamente um executor.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"dataRealizacao\": \"2026-10-28\",\n  \"cpfPaciente\": \"77777777777\",\n  \"cpfProfissional\": \"33333333333\",\n  \"cpfEstagiario\": \"99999999999\",\n  \"cpfSupervisor\": \"44444444444\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "ERRO 422 - retorno antes da realização",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/avaliacoes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "avaliacoes"
+              ]
+            },
+            "description": "CHECK ck_avaliacao_datas.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"dataRealizacao\": \"2026-10-28\",\n  \"dataRetorno\": \"2026-10-01\",\n  \"cpfPaciente\": \"77777777777\",\n  \"cpfProfissional\": \"33333333333\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "ERRO 422 - paciente informado como profissional",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/avaliacoes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "avaliacoes"
+              ]
+            },
+            "description": "22222222222 é paciente: não existe em profissional_saude.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"dataRealizacao\": \"2026-10-28\",\n  \"cpfPaciente\": \"77777777777\",\n  \"cpfProfissional\": \"22222222222\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "09 Suspeitas PRF",
+      "item": [
+        {
+          "name": "Listar suspeitas",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/suspeitas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "suspeitas"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Suspeitas de uma avaliação",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/suspeitas?idAvaliacao=1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "suspeitas"
+              ],
+              "query": [
+                {
+                  "key": "idAvaliacao",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Criar suspeita (id 4)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/suspeitas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "suspeitas"
+              ]
+            },
+            "description": "dataRegistro omitida = hoje.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idAvaliacao\": 4,\n  \"idMedicamento\": 5,\n  \"idOpcaoNesc\": 3\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Atualizar suspeita 4",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/suspeitas/4",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "suspeitas",
+                "4"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"dataRegistro\": \"2026-10-28\",\n  \"idAvaliacao\": 4,\n  \"idMedicamento\": 5,\n  \"idOpcaoNesc\": 4\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "ERRO 422 - medicamento de outro paciente",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/suspeitas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "suspeitas"
+              ]
+            },
+            "description": "Avaliação 4 é do 77777777777 e o medicamento 1 é da 11111111111 (gatilho tg_suspeita_medicamento_paciente).",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idAvaliacao\": 4,\n  \"idMedicamento\": 1,\n  \"idOpcaoNesc\": 3\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "10 Intervenções",
+      "item": [
+        {
+          "name": "Listar intervenções",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/intervencoes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "intervencoes"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Intervenções de uma suspeita",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/intervencoes?idSuspeita=1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "intervencoes"
+              ],
+              "query": [
+                {
+                  "key": "idSuspeita",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Criar intervenção (id 5)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/intervencoes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "intervencoes"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idSuspeita\": 4,\n  \"tipo\": \"ENCAMINHAMENTO\",\n  \"descricao\": \"Encaminhado ao endocrinologista para ajuste de dose.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Atualizar intervenção 5",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/intervencoes/5",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "intervencoes",
+                "5"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idSuspeita\": 4,\n  \"tipo\": \"ORIENTACAO_MEDICAMENTO\",\n  \"descricao\": \"Orientado a tomar a levotiroxina em jejum, 30 min antes do café.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "ERRO 400 - tipo fora da lista",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/intervencoes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "intervencoes"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idSuspeita\": 4,\n  \"tipo\": \"CIRURGIA\",\n  \"descricao\": \"x\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Excluir intervenção 5",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/intervencoes/5",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "intervencoes",
+                "5"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "11 Consultas (agenda)",
+      "item": [
+        {
+          "name": "Agenda completa",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/consultas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "consultas"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Agenda de novembro",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/consultas?inicio=2026-11-01&fim=2026-11-30",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "consultas"
+              ],
+              "query": [
+                {
+                  "key": "inicio",
+                  "value": "2026-11-01"
+                },
+                {
+                  "key": "fim",
+                  "value": "2026-11-30"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Consultas de um paciente",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/consultas?cpfPaciente=11111111111",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "consultas"
+              ],
+              "query": [
+                {
+                  "key": "cpfPaciente",
+                  "value": "11111111111"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Criar primeira consulta (id 5)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/consultas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "consultas"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"dataAgendada\": \"2026-10-27T10:00\",\n  \"tipo\": \"PRIMEIRA\",\n  \"cpfPaciente\": \"77777777777\",\n  \"cpfProfissional\": \"33333333333\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Criar retorno da avaliação 4 (id 6)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/consultas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "consultas"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"dataAgendada\": \"2026-12-01T10:00\",\n  \"tipo\": \"RETORNO\",\n  \"cpfPaciente\": \"77777777777\",\n  \"cpfEstagiario\": \"99999999999\",\n  \"idAvaliacaoOrigem\": 4\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Atualizar consulta 6",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/consultas/6",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "consultas",
+                "6"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"dataAgendada\": \"2026-12-01T14:30\",\n  \"tipo\": \"RETORNO\",\n  \"cpfPaciente\": \"77777777777\",\n  \"cpfProfissional\": \"33333333333\",\n  \"idAvaliacaoOrigem\": 4\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "ERRO 422 - retorno sem avaliação de origem",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/consultas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "consultas"
+              ]
+            },
+            "description": "CHECK ck_consulta_retorno_origem.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"dataAgendada\": \"2026-12-05T10:00\",\n  \"tipo\": \"RETORNO\",\n  \"cpfPaciente\": \"77777777777\",\n  \"cpfProfissional\": \"33333333333\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "ERRO 422 - retorno de avaliação de outro paciente",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/consultas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "consultas"
+              ]
+            },
+            "description": "FK composta (id_avaliacao_origem, cpf_paciente).",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"dataAgendada\": \"2026-12-05T10:00\",\n  \"tipo\": \"RETORNO\",\n  \"cpfPaciente\": \"77777777777\",\n  \"cpfProfissional\": \"33333333333\",\n  \"idAvaliacaoOrigem\": 3\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "ERRO 409 - segundo retorno da mesma avaliação",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/consultas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "consultas"
+              ]
+            },
+            "description": "Relação origina 1:1 (UNIQUE em id_avaliacao_origem).",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"dataAgendada\": \"2026-12-05T10:00\",\n  \"tipo\": \"RETORNO\",\n  \"cpfPaciente\": \"11111111111\",\n  \"cpfProfissional\": \"33333333333\",\n  \"idAvaliacaoOrigem\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "ERRO 422 - sem responsável",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/consultas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "consultas"
+              ]
+            },
+            "description": "CHECK ck_consulta_responsavel.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"dataAgendada\": \"2026-12-05T10:00\",\n  \"tipo\": \"PRIMEIRA\",\n  \"cpfPaciente\": \"77777777777\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Excluir consulta 5",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/consultas/5",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "consultas",
+                "5"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "12 Correção de CPF (ON UPDATE CASCADE)",
+      "item": [
+        {
+          "name": "Corrigir CPF do paciente",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/pessoas/77777777777/cpf",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "pessoas",
+                "77777777777",
+                "cpf"
+              ]
+            },
+            "description": "Propaga para paciente, medicamentos, avaliações, suspeitas (via avaliação) e consultas.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"novoCpf\": \"77777777700\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Conferir: avaliações já com o CPF novo",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/avaliacoes?cpfPaciente=77777777700",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "avaliacoes"
+              ],
+              "query": [
+                {
+                  "key": "cpfPaciente",
+                  "value": "77777777700"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Conferir: consultas já com o CPF novo",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/consultas?cpfPaciente=77777777700",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "consultas"
+              ],
+              "query": [
+                {
+                  "key": "cpfPaciente",
+                  "value": "77777777700"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "13 Exclusões e ON DELETE RESTRICT",
+      "item": [
+        {
+          "name": "ERRO 409 - excluir paciente com histórico",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/pacientes/11111111111",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "pacientes",
+                "11111111111"
+              ]
+            },
+            "description": "ON DELETE RESTRICT: o paciente tem medicamentos, avaliações e consultas."
+          }
+        },
+        {
+          "name": "ERRO 409 - excluir avaliação com suspeitas",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/avaliacoes/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "avaliacoes",
+                "1"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Criar paciente sem histórico",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/pacientes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "pacientes"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cpf\": \"12121212121\",\n  \"nomeCompleto\": \"Paciente Temporário\",\n  \"dataNascimento\": \"1999-09-09\",\n  \"genero\": \"OUTRO\",\n  \"telefone\": \"81900000001\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Contato do paciente temporário",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/pacientes/12121212121/contatos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "pacientes",
+                "12121212121",
+                "contatos"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Contato Temporário\",\n  \"telefone\": \"81900000002\",\n  \"relacao\": \"Amigo\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Excluir paciente sem histórico",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/pacientes/12121212121",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "pacientes",
+                "12121212121"
+              ]
+            },
+            "description": "204: remove pessoa + paciente; o contato vai junto (ON DELETE CASCADE)."
+          }
+        },
+        {
+          "name": "ERRO 404 - paciente não existe mais",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/pacientes/12121212121",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "pacientes",
+                "12121212121"
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,683 @@
+### =====================================================================
+### Sistema de Avaliação PRF — Grupo 4 — exemplos de requisição
+### Funciona no VS Code (extensão REST Client) e no IntelliJ (HTTP Client).
+### Rode de cima para baixo num banco recém-criado (docker compose down -v
+### e depois up): os ids citados batem com os dados do 02-seed.sql.
+### =====================================================================
+
+@baseUrl = http://localhost:8080
+
+
+### =====================================================================
+### 01 Pessoas (superclasse)
+### =====================================================================
+
+### Listar todas as pessoas
+# Mostra o tipo de cada pessoa (PACIENTE, PROFISSIONAL, ESTAGIARIO).
+GET {{baseUrl}}/api/pessoas
+
+### Buscar pessoa por CPF
+GET {{baseUrl}}/api/pessoas/11111111111
+
+
+### =====================================================================
+### 02 Pacientes
+### =====================================================================
+
+### Listar pacientes
+GET {{baseUrl}}/api/pacientes
+
+### Buscar paciente
+GET {{baseUrl}}/api/pacientes/11111111111
+
+### Criar paciente
+# Insere em pessoa e paciente na mesma transação (herança JOINED). 201 Created.
+POST {{baseUrl}}/api/pacientes
+Content-Type: application/json
+
+{
+  "cpf": "77777777777",
+  "nomeCompleto": "Antônio Pereira Santos",
+  "dataNascimento": "1960-04-12",
+  "genero": "MASCULINO",
+  "telefone": "81999990007"
+}
+
+### Atualizar paciente
+# O CPF não muda pelo PUT (use PATCH /api/pessoas/{cpf}/cpf).
+PUT {{baseUrl}}/api/pacientes/77777777777
+Content-Type: application/json
+
+{
+  "nomeCompleto": "Antônio Pereira dos Santos",
+  "dataNascimento": "1960-04-12",
+  "genero": "MASCULINO",
+  "telefone": "81999990077"
+}
+
+### ERRO 409 - CPF já cadastrado
+# 33333333333 já é PROFISSIONAL: especialização disjunta.
+POST {{baseUrl}}/api/pacientes
+Content-Type: application/json
+
+{
+  "cpf": "33333333333",
+  "nomeCompleto": "Teste",
+  "dataNascimento": "1990-01-01",
+  "genero": "OUTRO",
+  "telefone": "81900000000"
+}
+
+### ERRO 400 - CPF com formato inválido
+# CPF só com 11 dígitos (mesma regra do CHECK ck_pessoa_cpf).
+POST {{baseUrl}}/api/pacientes
+Content-Type: application/json
+
+{
+  "cpf": "123.456.789-00",
+  "nomeCompleto": "Teste",
+  "dataNascimento": "1990-01-01",
+  "genero": "OUTRO",
+  "telefone": "81900000000"
+}
+
+
+### =====================================================================
+### 03 Contatos de emergência (entidade fraca)
+### =====================================================================
+
+### Listar contatos do paciente
+GET {{baseUrl}}/api/pacientes/11111111111/contatos
+
+### Criar contato
+# Chave = (cpf do paciente, nome).
+POST {{baseUrl}}/api/pacientes/77777777777/contatos
+Content-Type: application/json
+
+{
+  "nome": "Rita Pereira",
+  "telefone": "81988880010",
+  "relacao": "Esposa"
+}
+
+### Buscar contato
+GET {{baseUrl}}/api/pacientes/77777777777/contatos/Rita%20Pereira
+
+### Atualizar contato
+# Só telefone e relação mudam; o nome é a chave parcial.
+PUT {{baseUrl}}/api/pacientes/77777777777/contatos/Rita%20Pereira
+Content-Type: application/json
+
+{
+  "telefone": "81988880099",
+  "relacao": "Esposa"
+}
+
+### ERRO 409 - contato com nome repetido
+# Viola a PK composta (cpf_paciente, nome).
+POST {{baseUrl}}/api/pacientes/11111111111/contatos
+Content-Type: application/json
+
+{
+  "nome": "Paulo Silva",
+  "telefone": "81900000000",
+  "relacao": "Filho"
+}
+
+### Excluir contato
+# 204 No Content.
+DELETE {{baseUrl}}/api/pacientes/77777777777/contatos/Rita%20Pereira
+
+
+### =====================================================================
+### 04 Profissionais de saúde
+### =====================================================================
+
+### Listar profissionais
+GET {{baseUrl}}/api/profissionais
+
+### Criar profissional
+POST {{baseUrl}}/api/profissionais
+Content-Type: application/json
+
+{
+  "cpf": "88888888888",
+  "nomeCompleto": "Juliana Moura Cavalcanti",
+  "dataNascimento": "1988-02-03",
+  "genero": "FEMININO",
+  "telefone": "81999990008",
+  "conselho": "CRF-PE",
+  "numeroRegistro": "54321",
+  "especialidade": "Farmácia Hospitalar"
+}
+
+### Atualizar profissional
+PUT {{baseUrl}}/api/profissionais/88888888888
+Content-Type: application/json
+
+{
+  "nomeCompleto": "Juliana Moura Cavalcanti",
+  "dataNascimento": "1988-02-03",
+  "genero": "FEMININO",
+  "telefone": "81999990088",
+  "conselho": "CRF-PE",
+  "numeroRegistro": "54321",
+  "especialidade": "Farmácia Clínica"
+}
+
+### ERRO 409 - registro repetido no mesmo conselho
+# UNIQUE (conselho, numero_registro). O mesmo número no CRM-PE é permitido.
+POST {{baseUrl}}/api/profissionais
+Content-Type: application/json
+
+{
+  "cpf": "10101010101",
+  "nomeCompleto": "Teste",
+  "dataNascimento": "1990-01-01",
+  "genero": "OUTRO",
+  "telefone": "81900000000",
+  "conselho": "CRF-PE",
+  "numeroRegistro": "12345",
+  "especialidade": "X"
+}
+
+
+### =====================================================================
+### 05 Estagiários
+### =====================================================================
+
+### Listar estagiários
+GET {{baseUrl}}/api/estagiarios
+
+### Criar estagiário
+POST {{baseUrl}}/api/estagiarios
+Content-Type: application/json
+
+{
+  "cpf": "99999999999",
+  "nomeCompleto": "Pedro Henrique Barros",
+  "dataNascimento": "2004-08-25",
+  "genero": "MASCULINO",
+  "telefone": "81999990009",
+  "instituicaoEnsino": "UFPE",
+  "curso": "Farmácia"
+}
+
+### Atualizar estagiário
+PUT {{baseUrl}}/api/estagiarios/99999999999
+Content-Type: application/json
+
+{
+  "nomeCompleto": "Pedro Henrique Barros",
+  "dataNascimento": "2004-08-25",
+  "genero": "MASCULINO",
+  "telefone": "81999990099",
+  "instituicaoEnsino": "UFPE",
+  "curso": "Farmácia"
+}
+
+
+### =====================================================================
+### 06 Catálogo NESC
+### =====================================================================
+
+### Listar catálogo
+GET {{baseUrl}}/api/opcoes-nesc
+
+### Filtrar por categoria
+GET {{baseUrl}}/api/opcoes-nesc?categoria=SEGURANCA
+
+### Criar opção (id 6)
+POST {{baseUrl}}/api/opcoes-nesc
+Content-Type: application/json
+
+{
+  "categoria": "EFETIVIDADE",
+  "subtipo": "QUALITATIVO",
+  "texto": "Medicamento inadequado para a condição"
+}
+
+### Atualizar opção 6
+PUT {{baseUrl}}/api/opcoes-nesc/6
+Content-Type: application/json
+
+{
+  "categoria": "EFETIVIDADE",
+  "subtipo": "QUALITATIVO",
+  "texto": "Medicamento não efetivo para a condição"
+}
+
+### ERRO 409 - opção duplicada
+# UNIQUE (categoria, subtipo, texto).
+POST {{baseUrl}}/api/opcoes-nesc
+Content-Type: application/json
+
+{
+  "categoria": "SEGURANCA",
+  "subtipo": "QUANTITATIVO",
+  "texto": "Dose acima da recomendada"
+}
+
+### ERRO 400 - categoria fora da lista
+# Categorias aceitas: NECESSIDADE, EFETIVIDADE, SEGURANCA, CUMPRIMENTO.
+POST {{baseUrl}}/api/opcoes-nesc
+Content-Type: application/json
+
+{
+  "categoria": "CUSTO",
+  "subtipo": "OUTRO",
+  "texto": "x"
+}
+
+### Excluir opção 6
+DELETE {{baseUrl}}/api/opcoes-nesc/6
+
+### ERRO 409 - excluir opção já usada
+# ON DELETE RESTRICT: a opção 5 classifica a suspeita 1.
+DELETE {{baseUrl}}/api/opcoes-nesc/5
+
+
+### =====================================================================
+### 07 Medicamentos
+### =====================================================================
+
+### Listar medicamentos
+GET {{baseUrl}}/api/medicamentos
+
+### Medicamentos de um paciente
+GET {{baseUrl}}/api/medicamentos?cpfPaciente=11111111111
+
+### Criar medicamento (id 5)
+POST {{baseUrl}}/api/medicamentos
+Content-Type: application/json
+
+{
+  "cpfPaciente": "77777777777",
+  "nome": "Levotiroxina",
+  "dose": "50 mcg",
+  "forma": "Comprimido",
+  "via": "Oral",
+  "frequencia": "1x ao dia, em jejum"
+}
+
+### Atualizar medicamento 5
+PUT {{baseUrl}}/api/medicamentos/5
+Content-Type: application/json
+
+{
+  "cpfPaciente": "77777777777",
+  "nome": "Levotiroxina",
+  "dose": "75 mcg",
+  "forma": "Comprimido",
+  "via": "Oral",
+  "frequencia": "1x ao dia, em jejum"
+}
+
+### ERRO 422 - trocar dono de medicamento com suspeita
+# O medicamento 1 já é alvo da suspeita 3 (da paciente 11111111111).
+PUT {{baseUrl}}/api/medicamentos/1
+Content-Type: application/json
+
+{
+  "cpfPaciente": "22222222222",
+  "nome": "Losartana",
+  "dose": "50 mg",
+  "forma": "Comprimido",
+  "via": "Oral",
+  "frequencia": "1x ao dia"
+}
+
+
+### =====================================================================
+### 08 Avaliações PRF
+### =====================================================================
+
+### Listar avaliações
+GET {{baseUrl}}/api/avaliacoes
+
+### Histórico de um paciente
+GET {{baseUrl}}/api/avaliacoes?cpfPaciente=11111111111
+
+### Criar avaliação por profissional (id 4)
+# Conduzida por profissional: sem estagiário e sem supervisor.
+POST {{baseUrl}}/api/avaliacoes
+Content-Type: application/json
+
+{
+  "dataRealizacao": "2026-10-28",
+  "dataRetorno": "2026-11-28",
+  "cpfPaciente": "77777777777",
+  "cpfProfissional": "33333333333"
+}
+
+### Criar avaliação por estagiário (id 5)
+# Estagiário exige supervisor.
+POST {{baseUrl}}/api/avaliacoes
+Content-Type: application/json
+
+{
+  "dataRealizacao": "2026-10-29",
+  "cpfPaciente": "77777777777",
+  "cpfEstagiario": "99999999999",
+  "cpfSupervisor": "88888888888"
+}
+
+### Atualizar avaliação 4
+PUT {{baseUrl}}/api/avaliacoes/4
+Content-Type: application/json
+
+{
+  "dataRealizacao": "2026-10-28",
+  "dataRetorno": "2026-12-01",
+  "cpfPaciente": "77777777777",
+  "cpfProfissional": "33333333333"
+}
+
+### ERRO 422 - estagiário sem supervisor
+# CHECK ck_avaliacao_supervisor.
+POST {{baseUrl}}/api/avaliacoes
+Content-Type: application/json
+
+{
+  "dataRealizacao": "2026-10-28",
+  "cpfPaciente": "77777777777",
+  "cpfEstagiario": "99999999999"
+}
+
+### ERRO 422 - profissional com supervisor
+# Avaliação de profissional não tem supervisão adicional.
+POST {{baseUrl}}/api/avaliacoes
+Content-Type: application/json
+
+{
+  "dataRealizacao": "2026-10-28",
+  "cpfPaciente": "77777777777",
+  "cpfProfissional": "33333333333",
+  "cpfSupervisor": "44444444444"
+}
+
+### ERRO 422 - profissional e estagiário juntos
+# CHECK ck_avaliacao_executor: exatamente um executor.
+POST {{baseUrl}}/api/avaliacoes
+Content-Type: application/json
+
+{
+  "dataRealizacao": "2026-10-28",
+  "cpfPaciente": "77777777777",
+  "cpfProfissional": "33333333333",
+  "cpfEstagiario": "99999999999",
+  "cpfSupervisor": "44444444444"
+}
+
+### ERRO 422 - retorno antes da realização
+# CHECK ck_avaliacao_datas.
+POST {{baseUrl}}/api/avaliacoes
+Content-Type: application/json
+
+{
+  "dataRealizacao": "2026-10-28",
+  "dataRetorno": "2026-10-01",
+  "cpfPaciente": "77777777777",
+  "cpfProfissional": "33333333333"
+}
+
+### ERRO 422 - paciente informado como profissional
+# 22222222222 é paciente: não existe em profissional_saude.
+POST {{baseUrl}}/api/avaliacoes
+Content-Type: application/json
+
+{
+  "dataRealizacao": "2026-10-28",
+  "cpfPaciente": "77777777777",
+  "cpfProfissional": "22222222222"
+}
+
+
+### =====================================================================
+### 09 Suspeitas PRF
+### =====================================================================
+
+### Listar suspeitas
+GET {{baseUrl}}/api/suspeitas
+
+### Suspeitas de uma avaliação
+GET {{baseUrl}}/api/suspeitas?idAvaliacao=1
+
+### Criar suspeita (id 4)
+# dataRegistro omitida = hoje.
+POST {{baseUrl}}/api/suspeitas
+Content-Type: application/json
+
+{
+  "idAvaliacao": 4,
+  "idMedicamento": 5,
+  "idOpcaoNesc": 3
+}
+
+### Atualizar suspeita 4
+PUT {{baseUrl}}/api/suspeitas/4
+Content-Type: application/json
+
+{
+  "dataRegistro": "2026-10-28",
+  "idAvaliacao": 4,
+  "idMedicamento": 5,
+  "idOpcaoNesc": 4
+}
+
+### ERRO 422 - medicamento de outro paciente
+# Avaliação 4 é do 77777777777 e o medicamento 1 é da 11111111111 (gatilho tg_suspeita_medicamento_paciente).
+POST {{baseUrl}}/api/suspeitas
+Content-Type: application/json
+
+{
+  "idAvaliacao": 4,
+  "idMedicamento": 1,
+  "idOpcaoNesc": 3
+}
+
+
+### =====================================================================
+### 10 Intervenções
+### =====================================================================
+
+### Listar intervenções
+GET {{baseUrl}}/api/intervencoes
+
+### Intervenções de uma suspeita
+GET {{baseUrl}}/api/intervencoes?idSuspeita=1
+
+### Criar intervenção (id 5)
+POST {{baseUrl}}/api/intervencoes
+Content-Type: application/json
+
+{
+  "idSuspeita": 4,
+  "tipo": "ENCAMINHAMENTO",
+  "descricao": "Encaminhado ao endocrinologista para ajuste de dose."
+}
+
+### Atualizar intervenção 5
+PUT {{baseUrl}}/api/intervencoes/5
+Content-Type: application/json
+
+{
+  "idSuspeita": 4,
+  "tipo": "ORIENTACAO_MEDICAMENTO",
+  "descricao": "Orientado a tomar a levotiroxina em jejum, 30 min antes do café."
+}
+
+### ERRO 400 - tipo fora da lista
+POST {{baseUrl}}/api/intervencoes
+Content-Type: application/json
+
+{
+  "idSuspeita": 4,
+  "tipo": "CIRURGIA",
+  "descricao": "x"
+}
+
+### Excluir intervenção 5
+DELETE {{baseUrl}}/api/intervencoes/5
+
+
+### =====================================================================
+### 11 Consultas (agenda)
+### =====================================================================
+
+### Agenda completa
+GET {{baseUrl}}/api/consultas
+
+### Agenda de novembro
+GET {{baseUrl}}/api/consultas?inicio=2026-11-01&fim=2026-11-30
+
+### Consultas de um paciente
+GET {{baseUrl}}/api/consultas?cpfPaciente=11111111111
+
+### Criar primeira consulta (id 5)
+POST {{baseUrl}}/api/consultas
+Content-Type: application/json
+
+{
+  "dataAgendada": "2026-10-27T10:00",
+  "tipo": "PRIMEIRA",
+  "cpfPaciente": "77777777777",
+  "cpfProfissional": "33333333333"
+}
+
+### Criar retorno da avaliação 4 (id 6)
+POST {{baseUrl}}/api/consultas
+Content-Type: application/json
+
+{
+  "dataAgendada": "2026-12-01T10:00",
+  "tipo": "RETORNO",
+  "cpfPaciente": "77777777777",
+  "cpfEstagiario": "99999999999",
+  "idAvaliacaoOrigem": 4
+}
+
+### Atualizar consulta 6
+PUT {{baseUrl}}/api/consultas/6
+Content-Type: application/json
+
+{
+  "dataAgendada": "2026-12-01T14:30",
+  "tipo": "RETORNO",
+  "cpfPaciente": "77777777777",
+  "cpfProfissional": "33333333333",
+  "idAvaliacaoOrigem": 4
+}
+
+### ERRO 422 - retorno sem avaliação de origem
+# CHECK ck_consulta_retorno_origem.
+POST {{baseUrl}}/api/consultas
+Content-Type: application/json
+
+{
+  "dataAgendada": "2026-12-05T10:00",
+  "tipo": "RETORNO",
+  "cpfPaciente": "77777777777",
+  "cpfProfissional": "33333333333"
+}
+
+### ERRO 422 - retorno de avaliação de outro paciente
+# FK composta (id_avaliacao_origem, cpf_paciente).
+POST {{baseUrl}}/api/consultas
+Content-Type: application/json
+
+{
+  "dataAgendada": "2026-12-05T10:00",
+  "tipo": "RETORNO",
+  "cpfPaciente": "77777777777",
+  "cpfProfissional": "33333333333",
+  "idAvaliacaoOrigem": 3
+}
+
+### ERRO 409 - segundo retorno da mesma avaliação
+# Relação origina 1:1 (UNIQUE em id_avaliacao_origem).
+POST {{baseUrl}}/api/consultas
+Content-Type: application/json
+
+{
+  "dataAgendada": "2026-12-05T10:00",
+  "tipo": "RETORNO",
+  "cpfPaciente": "11111111111",
+  "cpfProfissional": "33333333333",
+  "idAvaliacaoOrigem": 1
+}
+
+### ERRO 422 - sem responsável
+# CHECK ck_consulta_responsavel.
+POST {{baseUrl}}/api/consultas
+Content-Type: application/json
+
+{
+  "dataAgendada": "2026-12-05T10:00",
+  "tipo": "PRIMEIRA",
+  "cpfPaciente": "77777777777"
+}
+
+### Excluir consulta 5
+DELETE {{baseUrl}}/api/consultas/5
+
+
+### =====================================================================
+### 12 Correção de CPF (ON UPDATE CASCADE)
+### =====================================================================
+
+### Corrigir CPF do paciente
+# Propaga para paciente, medicamentos, avaliações, suspeitas (via avaliação) e consultas.
+PATCH {{baseUrl}}/api/pessoas/77777777777/cpf
+Content-Type: application/json
+
+{
+  "novoCpf": "77777777700"
+}
+
+### Conferir: avaliações já com o CPF novo
+GET {{baseUrl}}/api/avaliacoes?cpfPaciente=77777777700
+
+### Conferir: consultas já com o CPF novo
+GET {{baseUrl}}/api/consultas?cpfPaciente=77777777700
+
+
+### =====================================================================
+### 13 Exclusões e ON DELETE RESTRICT
+### =====================================================================
+
+### ERRO 409 - excluir paciente com histórico
+# ON DELETE RESTRICT: o paciente tem medicamentos, avaliações e consultas.
+DELETE {{baseUrl}}/api/pacientes/11111111111
+
+### ERRO 409 - excluir avaliação com suspeitas
+DELETE {{baseUrl}}/api/avaliacoes/1
+
+### Criar paciente sem histórico
+POST {{baseUrl}}/api/pacientes
+Content-Type: application/json
+
+{
+  "cpf": "12121212121",
+  "nomeCompleto": "Paciente Temporário",
+  "dataNascimento": "1999-09-09",
+  "genero": "OUTRO",
+  "telefone": "81900000001"
+}
+
+### Contato do paciente temporário
+POST {{baseUrl}}/api/pacientes/12121212121/contatos
+Content-Type: application/json
+
+{
+  "nome": "Contato Temporário",
+  "telefone": "81900000002",
+  "relacao": "Amigo"
+}
+
+### Excluir paciente sem histórico
+# 204: remove pessoa + paciente; o contato vai junto (ON DELETE CASCADE).
+DELETE {{baseUrl}}/api/pacientes/12121212121
+
+### ERRO 404 - paciente não existe mais
+GET {{baseUrl}}/api/pacientes/12121212121

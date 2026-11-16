@@ -1,0 +1,47 @@
+# Sistema de Avaliação PRF — Grupo 4
+# Sobe o banco PostgreSQL e o backend Spring Boot.
+#
+#   docker compose up --build        (primeira vez ou depois de mudar o código)
+#   docker compose down -v           (para tudo e APAGA o banco, que é recriado do zero)
+#
+# Na Etapa 4, o serviço "frontend" entra neste mesmo arquivo.
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: prf-db
+    environment:
+      POSTGRES_DB: prf
+      POSTGRES_USER: prf
+      POSTGRES_PASSWORD: prf
+      TZ: America/Recife
+    ports:
+      # 5433 do lado de fora para não brigar com um PostgreSQL já instalado na máquina
+      - "5433:5432"
+    volumes:
+      # Os scripts desta pasta rodam em ordem alfabética, só na criação do volume:
+      # 01-schema.sql (tabelas, CHECKs, gatilhos, índices) e 02-seed.sql (dados de exemplo)
+      - ./db:/docker-entrypoint-initdb.d:ro
+      - prf-dados:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U prf -d prf"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build: ./backend
+    container_name: prf-api
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_URL: jdbc:postgresql://db:5432/prf
+      DB_USER: prf
+      DB_PASSWORD: prf
+      TZ: America/Recife
+    ports:
+      - "8080:8080"
+
+volumes:
+  prf-dados:
